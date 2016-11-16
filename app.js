@@ -26,3 +26,23 @@ app.listen(appEnv.port, '0.0.0.0', function() {
   // print a message when the server starts listening
   console.log("server starting on " + appEnv.url);
 });
+
+// create a new message
+var create_message = function(req, res) {
+require('cloudantdb').connect(cloudant.url, function(err, conn) {
+var collection = conn.collection('messages');
+
+// create message record
+var parsedUrl = require('url').parse(req.url, true);
+var queryObject = parsedUrl.query;
+var name = (queryObject["name"] || 'Bluemix');
+var message = { 'message': 'Hello, ' + name, 'ts': new Date()
+};
+collection.insert(message, {safe:true}, function(err){
+ if (err) { console.log(err.stack); }
+ res.writeHead(200, {'Content-Type': 'text/plain'});
+ res.write(JSON.stringify(message));
+ res.end('\n');
+});
+});
+}
